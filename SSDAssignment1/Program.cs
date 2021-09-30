@@ -4,10 +4,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SSDAssignment1.Data;
+using SSDAssignment1.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Identity;
 
 namespace SSDAssignment1
 {
@@ -15,8 +17,18 @@ namespace SSDAssignment1
     {
         public static void Main(string[] args)
         {
-            var host = CreateHostBuilder(args).Build(); 
-                     
+            var host = CreateHostBuilder(args).Build();
+
+            var configuration = host.Services.GetService<IConfiguration>();
+            var hosting = host.Services.GetService<IWebHostEnvironment>();
+
+           
+                var secrets = configuration.GetSection("Secrets").Get<AppSecrets>();
+                DbInitializer.appSecrets = secrets;
+
+
+           
+
             using (var scope = host.Services.CreateScope())
             {
                 DbInitializer.SeedUsersAndRoles(scope.ServiceProvider).Wait();
@@ -26,6 +38,13 @@ namespace SSDAssignment1
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+.ConfigureAppConfiguration((context, config) =>
+{
+var keyVaultEndpoint = new Uri(Environment.GetEnvironmentVariable("VaultUri"));
+config.AddAzureKeyVault(
+keyVaultEndpoint,
+new DefaultAzureCredential());
+})
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
