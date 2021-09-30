@@ -12,6 +12,7 @@ namespace SSDAssignment1.Data
 {
     public static class DbInitializer
     {
+        public static AppSecrets appSecrets { get; set; }
         public static async Task<int> SeedUsersAndRoles(IServiceProvider serviceProvider)
         {
             // create the database if it doesn't exist
@@ -68,7 +69,7 @@ namespace SSDAssignment1.Data
                 LastName = "Manager",
                 EmailConfirmed = true
             };
-            var result = await userManager.CreateAsync(managerUser, "Password!1");
+            var result = await userManager.CreateAsync(managerUser, appSecrets.ManagerPwd);
             if (!result.Succeeded)
                 return 1;  // should log an error message here
 
@@ -86,7 +87,7 @@ namespace SSDAssignment1.Data
                 LastName = "Player",
                 EmailConfirmed = true
             };
-            result = await userManager.CreateAsync(playerUser, "Password!1");
+            result = await userManager.CreateAsync(playerUser, appSecrets.PlayerPwd);
             if (!result.Succeeded)
                 return 3;  // should log an error message here
 
